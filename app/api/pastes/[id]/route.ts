@@ -12,7 +12,7 @@ export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params; // ✅ FIX HERE
+  const { id } = await context.params; 
   const key = `paste:${id}`;
 
   const paste = await redis.hgetall<any>(key);
@@ -25,21 +25,20 @@ export async function GET(
 
   const now = getNow(req);
 
-  // ⏱️ TTL check
   if (paste.expires_at && now >= Number(paste.expires_at)) {
     return new Response(JSON.stringify({ error: "Not found" }), {
       status: 404,
     });
   }
 
-  // 👀 View limit check
+
   if (paste.max_views && Number(paste.views) >= Number(paste.max_views)) {
     return new Response(JSON.stringify({ error: "Not found" }), {
       status: 404,
     });
   }
 
-  // 🔼 Increment views
+
   const views = await redis.hincrby(key, "views", 1);
 
   const remaining_views =

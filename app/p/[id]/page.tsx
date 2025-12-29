@@ -13,10 +13,10 @@ export default async function PastePage({
   params,
   headers,
 }: {
-  params: Promise<{ id: string }>; // ✅ params is a Promise
+  params: Promise<{ id: string }>; 
   headers: Headers;
 }) {
-  const { id } = await params; // ✅ FIX HERE
+  const { id } = await params; 
   const key = `paste:${id}`;
 
   const paste = await redis.hgetall<any>(key);
@@ -27,17 +27,15 @@ export default async function PastePage({
 
   const now = getNow(headers);
 
-  // ⏱️ TTL check
+
   if (paste.expires_at && now >= Number(paste.expires_at)) {
     notFound();
   }
 
-  // 👀 View limit check
   if (paste.max_views && Number(paste.views) >= Number(paste.max_views)) {
     notFound();
   }
 
-  // 🔼 Increment views
   await redis.hincrby(key, "views", 1);
 
   return (
